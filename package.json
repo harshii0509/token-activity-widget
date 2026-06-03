@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "White-label React activity widget renderer for Claude Leaderboard and custom activity data",
+  "description": "React activity heatmap widget for hosted APIs and custom activity data",
   "license": "MIT",
   "author": "harshii0509",
   "repository": {
@@ -18,10 +18,13 @@
     "activity-widget",
     "react",
     "heatmap",
-    "claude-leaderboard",
-    "portfolio",
+    "activity",
+    "dashboard",
     "embed"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "sideEffects": false,
   "files": [
     "dist",
@@ -39,8 +42,16 @@
   },
   "scripts": {
     "build": "tsc -p ./tsconfig.json",
+    "build:watch": "tsc -p ./tsconfig.json --watch --preserveWatchOutput",
     "test": "npm run build && node --experimental-strip-types --test tests/**/*.test.ts",
     "verify": "npm run build && npm pack --dry-run --cache ./.npm-cache",
+    "verify:all": "npm run verify && npm run sandbox:build",
+    "sandbox:install": "npm run build && npm --prefix ./sandbox install",
+    "sandbox:dev": "npm run build && npm --prefix ./sandbox run dev -- --host 127.0.0.1",
+    "sandbox:dev:watch": "npm run build && concurrently -k \"npm run build:watch\" \"npm --prefix ./sandbox run dev -- --host 127.0.0.1\"",
+    "sandbox:build": "npm run build && npm --prefix ./sandbox run build",
+    "sandbox:smoke": "npm run build && node ./scripts/smoke-sandbox.mjs",
+    "sandbox:preview": "npm run sandbox:build && npm --prefix ./sandbox run preview -- --host 127.0.0.1",
     "prepublishOnly": "npm test"
   },
   "publishConfig": {
@@ -53,6 +64,7 @@
   "devDependencies": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "concurrently": "^9.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.0.0"

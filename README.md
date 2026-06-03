@@ -1,14 +1,20 @@
 # `token-activity-widget`
 
-White-label React activity widget renderer for Claude Leaderboard hosted widgets and custom activity data.
+React activity heatmap widget for hosted APIs and custom activity data.
 
-## What it supports
+## What you get
 
-- Hosted fetch mode from a Claude Leaderboard instance
-- Direct data mode for custom apps and personal sites
-- Typed theme customization with semantic color slots
-- Built-in convenience presets: `arcade`, `night`, `paper`
-- Interactive yearly heatmap with hover tooltip
+- Direct data mode for apps, dashboards, and personal sites
+- Hosted fetch mode for any API that returns the widget payload shape
+- Typed theme overrides with built-in presets: `arcade`, `night`, `paper`
+- Interactive yearly heatmap with tooltip details for tokens, messages, and sessions
+- Local sandbox for trying the package like a real consumer before shipping it
+
+## Requirements
+
+- `react >= 18`
+- `react-dom >= 18`
+- `node >= 18` for local development and verification
 
 ## Install
 
@@ -16,29 +22,7 @@ White-label React activity widget renderer for Claude Leaderboard hosted widgets
 npm install token-activity-widget
 ```
 
-## Hosted mode
-
-```tsx
-import { ActivityWidget } from 'token-activity-widget'
-
-export function PortfolioWidget() {
-  return (
-    <ActivityWidget
-      publicId="your-public-id"
-      baseUrl="https://your-claude-leaderboard-instance.com"
-      preset="night"
-      theme={{
-        frame: '#0b1020',
-        text: '#f8fafc',
-        muted: '#94a3b8',
-        activityScale: ['#0f172a', '#1d4ed8', '#2563eb', '#60a5fa', '#bfdbfe'],
-      }}
-    />
-  )
-}
-```
-
-## Direct data mode
+## Quick Start: Direct Data
 
 ```tsx
 import { ActivityWidgetFromData, type ActivityWidgetData } from 'token-activity-widget'
@@ -74,6 +58,36 @@ export function CustomWidget() {
 }
 ```
 
+## Quick Start: Hosted Mode
+
+```tsx
+import { ActivityWidget } from 'token-activity-widget'
+
+export function PortfolioWidget() {
+  return (
+    <ActivityWidget
+      publicId="your-public-id"
+      baseUrl="https://your-app.com"
+      preset="night"
+      theme={{
+        frame: '#0b1020',
+        text: '#f8fafc',
+        muted: '#94a3b8',
+        activityScale: ['#0f172a', '#1d4ed8', '#2563eb', '#60a5fa', '#bfdbfe'],
+      }}
+    />
+  )
+}
+```
+
+`ActivityWidget` fetches from:
+
+```txt
+${baseUrl}/api/public-widget/${encodeURIComponent(publicId)}
+```
+
+Return a JSON object matching `ActivityWidgetData`.
+
 ## Theme API
 
 ```ts
@@ -107,6 +121,41 @@ If both `preset` and `theme` are provided, `theme` wins per field.
 - `type ActivityWidgetDay`
 - `type ActivityWidgetPreset`
 
+## Local Sandbox
+
+Use the sandbox when you want to test the package like a real consumer and play with it visually.
+
+```bash
+npm install
+npm run sandbox:install
+npm run sandbox:dev
+```
+
+Useful sandbox commands:
+
+- `npm run sandbox:dev`: build the library, then run the sandbox
+- `npm run sandbox:dev:watch`: watch the library build and run the sandbox together
+- `npm run sandbox:build`: production-build the sandbox against the local package
+- `npm run sandbox:smoke`: boot a local sandbox server and verify the page shell plus hosted mock API
+- `npm run sandbox:preview`: preview the built sandbox locally
+
+The sandbox includes:
+
+- Direct data mode
+- Hosted mode backed by a local mock `/api/public-widget/:publicId` endpoint
+- Preset and theme controls
+- Width controls and multiple sample datasets
+
+## Validation
+
+```bash
+npm test
+npm run verify
+npm run verify:all
+```
+
+`verify:all` checks the published package shape and confirms the sandbox builds against the local package.
+
 ## Examples
 
-See [`examples/`](./examples) for hosted and direct-data starter snippets.
+See [`examples/`](./examples) for small hosted and direct-data starter snippets.
