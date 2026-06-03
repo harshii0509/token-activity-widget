@@ -1,6 +1,10 @@
 # `token-activity-widget`
 
+[![npm version](https://img.shields.io/npm/v/token-activity-widget.svg)](https://www.npmjs.com/package/token-activity-widget)
+
 React activity heatmap widget for hosted APIs and custom activity data.
+
+Package: [npmjs.com/package/token-activity-widget](https://www.npmjs.com/package/token-activity-widget)
 
 ## What you get
 
