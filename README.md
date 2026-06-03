@@ -109,4 +109,4 @@ If both `preset` and `theme` are provided, `theme` wins per field.
 
 ## Examples
 
-See [`examples/`](/Users/harshii/Developer/side-projects/claude-leaderboard/activity-widget-react/examples) for hosted and direct-data starter snippets.
+See [`examples/`](./examples) for hosted and direct-data starter snippets.

@@ -8,7 +8,11 @@
   "author": "harshii0509",
   "repository": {
     "type": "git",
-    "url": "https://github.com/harshii0509/activity-widget-react"
+    "url": "git+https://github.com/harshii0509/token-activity-widget.git"
+  },
+  "homepage": "https://github.com/harshii0509/token-activity-widget#readme",
+  "bugs": {
+    "url": "https://github.com/harshii0509/token-activity-widget/issues"
   },
   "keywords": [
     "activity-widget",
@@ -36,7 +40,8 @@
   "scripts": {
     "build": "tsc -p ./tsconfig.json",
     "test": "npm run build && node --experimental-strip-types --test tests/**/*.test.ts",
-    "verify": "npm run build && npm pack --dry-run --cache ./.npm-cache"
+    "verify": "npm run build && npm pack --dry-run --cache ./.npm-cache",
+    "prepublishOnly": "npm test"
   },
   "publishConfig": {
     "access": "public"
