@@ -1,10 +1,9 @@
 import { ActivityWidget } from '../src/index'
 
-export default function ExampleHostedWidget() {
+export default function ExampleFetchedWidget() {
   return (
     <ActivityWidget
-      publicId="your-public-id"
-      baseUrl="https://your-app.com"
+      url="https://your-app.com/token-activity-widget.json"
       preset="paper"
       theme={{
         text: '#334155',

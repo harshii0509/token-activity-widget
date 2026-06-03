@@ -1,9 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import {
-  buildActivityWidgetDataUrl,
-  fetchActivityWidgetData,
-} from '../dist/data/fetchActivityWidgetData.js'
+import { fetchActivityWidgetData } from '../dist/data/fetchActivityWidgetData.js'
 
 const minimalPayload = {
   preset: 'arcade',
@@ -21,11 +18,6 @@ const richerLegacyPayload = {
   activity: [],
 }
 
-test('buildActivityWidgetDataUrl trims trailing slashes and encodes the public id', () => {
-  const url = buildActivityWidgetDataUrl('https://leaderboard.example.com/', 'abc 123')
-  assert.equal(url, 'https://leaderboard.example.com/api/public-widget/abc%20123')
-})
-
 test('fetchActivityWidgetData parses minimal grid payloads', async () => {
   const originalFetch = globalThis.fetch
   globalThis.fetch = async () =>
@@ -35,7 +27,7 @@ test('fetchActivityWidgetData parses minimal grid payloads', async () => {
     }) as typeof fetch
 
   try {
-    const result = await fetchActivityWidgetData('https://leaderboard.example.com', 'demo')
+    const result = await fetchActivityWidgetData('https://leaderboard.example.com/widget.json')
     assert.equal(result.preset, 'arcade')
     assert.deepEqual(result.activity, [])
     assert.equal(result.publicId, undefined)
@@ -53,7 +45,7 @@ test('fetchActivityWidgetData tolerates richer legacy payloads and ignores extra
     }) as typeof fetch
 
   try {
-    const result = await fetchActivityWidgetData('https://leaderboard.example.com', 'demo')
+    const result = await fetchActivityWidgetData('https://leaderboard.example.com/api/widget/demo')
     assert.equal(result.publicId, 'demo')
     assert.equal(result.lastSyncedAt, '2026-06-04T10:00:00.000Z')
     assert.deepEqual(result.activity, [])
@@ -72,7 +64,7 @@ test('fetchActivityWidgetData surfaces json api errors', async () => {
 
   try {
     await assert.rejects(
-      () => fetchActivityWidgetData('https://leaderboard.example.com', 'missing'),
+      () => fetchActivityWidgetData('https://leaderboard.example.com/api/widget/missing'),
       /Widget not found/,
     )
   } finally {
@@ -90,7 +82,7 @@ test('fetchActivityWidgetData surfaces malformed json cleanly', async () => {
 
   try {
     await assert.rejects(
-      () => fetchActivityWidgetData('https://leaderboard.example.com', 'broken'),
+      () => fetchActivityWidgetData('https://leaderboard.example.com/widget.json'),
       /invalid JSON/i,
     )
   } finally {

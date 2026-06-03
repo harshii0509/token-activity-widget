@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": false,
   "type": "module",
-  "description": "React activity heatmap grid for hosted APIs and custom activity data",
+  "description": "White-label React activity heatmap grid plus local sync CLI for Claude, Codex, and OpenCode usage",
   "license": "MIT",
   "author": "harshii0509",
   "repository": {
@@ -20,6 +20,7 @@
     "heatmap",
     "grid",
     "activity",
+    "cli",
     "dashboard",
     "embed"
   ],
@@ -32,6 +33,9 @@
     "README.md",
     "examples"
   ],
+  "bin": {
+    "token-activity-widget": "dist/cli/bin.js"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -63,11 +67,16 @@
     "react-dom": ">=18"
   },
   "devDependencies": {
+    "@types/node": "^25.9.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/sql.js": "^1.4.11",
     "concurrently": "^9.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "sql.js": "^1.14.1"
   }
 }

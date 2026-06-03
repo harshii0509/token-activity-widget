@@ -1,19 +1,10 @@
 import { normalizeWidgetData } from './widgetData.js'
 import type { ActivityWidgetData } from '../types.js'
 
-function trimTrailingSlash(baseUrl: string) {
-  return baseUrl.replace(/\/+$/, '')
-}
-
-export function buildActivityWidgetDataUrl(baseUrl: string, publicId: string) {
-  return `${trimTrailingSlash(baseUrl)}/api/public-widget/${encodeURIComponent(publicId)}`
-}
-
 export async function fetchActivityWidgetData(
-  baseUrl: string,
-  publicId: string,
+  url: string,
 ): Promise<ActivityWidgetData> {
-  const response = await fetch(buildActivityWidgetDataUrl(baseUrl, publicId), {
+  const response = await fetch(url, {
     headers: {
       Accept: 'application/json',
     },

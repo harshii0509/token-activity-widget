@@ -2,30 +2,38 @@
 
 [![npm version](https://img.shields.io/npm/v/token-activity-widget.svg)](https://www.npmjs.com/package/token-activity-widget)
 
-React activity heatmap grid for hosted APIs and custom activity data.
+White-label React activity heatmap grid plus a local sync CLI for Claude, Codex, and OpenCode usage.
 
 Package: [npmjs.com/package/token-activity-widget](https://www.npmjs.com/package/token-activity-widget)
 
-## What you get
+## What this is
 
 - A grid-only activity heatmap you can drop into your own website chrome
-- Bare `ActivityGrid` primitive for apps that already have activity data
-- Direct data and hosted fetch wrappers built on the same grid surface
-- Typed theme overrides with built-in presets: `arcade`, `night`, `paper`
-- Month labels, weekday labels, and hover tooltip enabled by default
-- Local sandbox for testing the package like a real consumer before shipping
+- A white-label React surface: no built-in header, avatar, streak card, or profile frame
+- A local CLI that reads real activity from your machine and writes normalized widget data into your app
+- Two website flows:
+  - `Import JSON`: simplest and private-first
+  - `Fetch URL`: runtime fetch from a static JSON file or API URL
 
-## Requirements
+## What this is not
 
-- `react >= 18`
-- `react-dom >= 18`
-- `node >= 18` for local development and verification
+- It does not read local logs from the browser
+- It does not ask website visitors for Claude, Codex, or OpenCode tokens
+- It does not require your users to log into a separate leaderboard website
+
+The browser package only renders data you give it. Real activity collection stays in the CLI.
 
 ## Install
 
 ```bash
 npm install token-activity-widget
 ```
+
+Requirements:
+
+- `react >= 18`
+- `react-dom >= 18`
+- `node >= 18`
 
 ## Quick Start: Bare Grid
 
@@ -47,45 +55,30 @@ const activity: ActivityWidgetDay[] = [
 export function SiteSection() {
   return (
     <div style={{ maxWidth: 840, padding: 16 }}>
-      <ActivityGrid
-        activity={activity}
-        preset="night"
-        className="token-grid"
-      />
+      <ActivityGrid activity={activity} preset="night" />
     </div>
   )
 }
 ```
 
-## Quick Start: Direct Data
+## Quick Start: Import Data Object
 
 ```tsx
 import { ActivityWidgetFromData, type ActivityWidgetData } from 'token-activity-widget'
 
 const data: ActivityWidgetData = {
   publicId: 'demo-user',
-  preset: 'arcade',
+  preset: 'night',
   lastSyncedAt: new Date().toISOString(),
   activity: [],
 }
 
 export function CustomWidget() {
-  return (
-    <ActivityWidgetFromData
-      data={data}
-      theme={{
-        text: '#431407',
-        muted: '#9a3412',
-        tooltipBackground: '#431407',
-        tooltipText: '#fff7ed',
-        activityScale: ['#ffedd5', '#fdba74', '#fb923c', '#ea580c', '#9a3412'],
-      }}
-    />
-  )
+  return <ActivityWidgetFromData data={data} />
 }
 ```
 
-## Quick Start: Hosted Mode
+## Quick Start: Fetch Any JSON URL
 
 ```tsx
 import { ActivityWidget } from 'token-activity-widget'
@@ -93,42 +86,109 @@ import { ActivityWidget } from 'token-activity-widget'
 export function PortfolioWidget() {
   return (
     <ActivityWidget
-      publicId="your-public-id"
-      baseUrl="https://your-app.com"
-      preset="night"
-      theme={{
-        text: '#f8fafc',
-        muted: '#94a3b8',
-        tooltipBackground: '#f8fafc',
-        tooltipText: '#020617',
-        activityScale: ['#0f172a', '#1d4ed8', '#2563eb', '#60a5fa', '#bfdbfe'],
-      }}
+      url="/token-activity-widget.json"
+      preset="paper"
     />
   )
 }
 ```
 
-`ActivityWidget` fetches from:
+`ActivityWidget` accepts any URL that returns JSON matching `ActivityWidgetData`.
 
-```txt
-${baseUrl}/api/public-widget/${encodeURIComponent(publicId)}
+That URL can be:
+
+- a static file like `/token-activity-widget.json`
+- your own API route
+- any other same-origin or allowed cross-origin JSON endpoint
+
+The fetch layer still tolerates richer legacy payloads with extra fields, but only the grid data is used.
+
+## Real Data Setup
+
+The CLI is the real-data bridge.
+
+Run this inside the website repo where you want to embed the grid:
+
+```bash
+npx token-activity-widget init
 ```
 
-Return a JSON object matching `ActivityWidgetData`. The fetch layer accepts both:
+That command:
 
-- the new minimal grid payload
-- richer legacy payloads with extra profile fields, which are ignored
+- detects a supported app
+- explains the two setup modes in plain language
+- writes `token-activity-widget.config.json`
+- scaffolds a starter component
+- adds a `token-activity:sync` script to your app
+- writes an agent prompt you can paste into Codex or Claude for final placement/styling
 
-Minimal payload example:
+Then generate real data:
 
-```json
-{
-  "publicId": "demo-user",
-  "preset": "night",
-  "lastSyncedAt": "2026-06-04T10:00:00.000Z",
-  "activity": []
-}
+```bash
+npx token-activity-widget sync
 ```
+
+Or after install:
+
+```bash
+npm run token-activity:sync
+```
+
+## The Two Website Flows
+
+### 1. Import JSON
+
+Recommended for most people.
+
+What the user does:
+
+1. Run `npx token-activity-widget init`
+2. Let it scaffold the component and config
+3. Run `npx token-activity-widget sync`
+4. Import the generated component into their app page
+5. Re-run sync whenever they want fresh data, then redeploy
+
+What gets generated:
+
+- a JSON data file
+- a typed generated module for direct app imports
+- a `TokenActivityGrid` component using `ActivityWidgetFromData`
+
+### 2. Fetch URL
+
+Best when the site should fetch the widget data at runtime.
+
+What the user does:
+
+1. Run `npx token-activity-widget init --mode fetch-url`
+2. Let it scaffold a public JSON target and component
+3. Run `npx token-activity-widget sync`
+4. Render the generated component
+5. Re-run sync whenever they want fresh public JSON
+
+What gets generated:
+
+- a public JSON file like `public/token-activity-widget.json`
+- a `TokenActivityGrid` component using `ActivityWidget url="..."`
+
+The default fetch target is a same-site static JSON file, but advanced users can later swap the URL to their own API route without changing the widget contract.
+
+## Supported Local Sources
+
+The CLI reads local usage history from these defaults:
+
+- Claude: `~/.claude/projects/**/*.jsonl`
+- Codex: `~/.codex/logs_2.sqlite`
+- OpenCode: `~/.local/share/opencode/opencode.db`
+
+You can override those paths in `token-activity-widget.config.json` if your setup differs.
+
+## Framework Support
+
+v1 scaffolding officially supports:
+
+- Next.js App Router
+- Vite + React
 
 ## Customization
 
@@ -140,9 +200,9 @@ All public components support:
 - `showLabels`
 - `showTooltip`
 
-`className` is the main website-embed hook. Wrap the grid in your own section, card, layout, or typography system rather than expecting the package to provide that chrome for you.
+This package is intentionally white-label. Wrap the grid in your own layout, typography, and brand chrome.
 
-## Theme API
+### Theme API
 
 ```ts
 type ActivityWidgetTheme = {
@@ -154,17 +214,20 @@ type ActivityWidgetTheme = {
 }
 ```
 
-Pass `theme` as a partial object. Missing fields are filled from the chosen preset.
+Pass `theme` as a partial object. Missing fields fall back to the chosen preset.
 
-If both `preset` and `theme` are provided, `theme` wins per field.
+Built-in presets:
 
-## Exports
+- `night`
+- `arcade`
+- `paper`
+
+## Public API
 
 - `ActivityGrid`
-- `ActivityWidget`
 - `ActivityWidgetFromData`
+- `ActivityWidget`
 - `fetchActivityWidgetData`
-- `buildActivityWidgetDataUrl`
 - `getPresetTheme`
 - `mergeWidgetTheme`
 - `type ActivityWidgetTheme`
@@ -172,9 +235,9 @@ If both `preset` and `theme` are provided, `theme` wins per field.
 - `type ActivityWidgetDay`
 - `type ActivityWidgetPreset`
 
-## Local Sandbox
+## Sandbox
 
-Use the sandbox when you want to test the package like a real consumer and play with it visually.
+Use the sandbox to test the package like a real consumer:
 
 ```bash
 npm install
@@ -182,20 +245,13 @@ npm run sandbox:install
 npm run sandbox:dev
 ```
 
-Useful sandbox commands:
-
-- `npm run sandbox:dev`: build the library, then run the sandbox
-- `npm run sandbox:dev:watch`: watch the library build and run the sandbox together
-- `npm run sandbox:build`: production-build the sandbox against the local package
-- `npm run sandbox:smoke`: boot a local sandbox server and verify the page shell plus hosted mock API
-- `npm run sandbox:preview`: preview the built sandbox locally
-
 The sandbox includes:
 
-- Bare `ActivityGrid` mode
-- Direct-data mode
-- Hosted mode backed by a local mock `/api/public-widget/:publicId` endpoint
-- Preset, theme, width, label, and tooltip controls
+- bare `ActivityGrid` mode
+- direct-data mode
+- fetched URL mode
+- preset, theme, width, label, and tooltip controls
+- a local mock URL for testing fetch success and error states
 
 ## Validation
 
@@ -203,10 +259,15 @@ The sandbox includes:
 npm test
 npm run verify
 npm run verify:all
+npm run sandbox:smoke
 ```
 
-`verify:all` checks the published package shape and confirms the sandbox builds against the local package.
+`verify:all` checks the package shape and confirms the sandbox builds against the local package.
 
 ## Examples
 
-See [`examples/`](./examples) for small hosted and direct-data starter snippets.
+See [`examples/`](./examples) for:
+
+- bare grid usage
+- direct-data usage
+- fetched JSON URL usage

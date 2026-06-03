@@ -6,8 +6,7 @@ import { ActivityWidgetFromData } from './ActivityWidgetFromData.js'
 import type { ActivityWidgetData, ActivityWidgetPreset, ActivityWidgetTheme } from '../types.js'
 
 export interface ActivityWidgetProps {
-  publicId: string
-  baseUrl: string
+  url: string
   preset?: ActivityWidgetPreset
   theme?: Partial<ActivityWidgetTheme>
   className?: string
@@ -16,8 +15,7 @@ export interface ActivityWidgetProps {
 }
 
 export function ActivityWidget({
-  publicId,
-  baseUrl,
+  url,
   preset,
   theme,
   className,
@@ -30,7 +28,7 @@ export function ActivityWidget({
   useEffect(() => {
     let cancelled = false
 
-    fetchActivityWidgetData(baseUrl, publicId)
+    fetchActivityWidgetData(url)
       .then((nextData) => {
         if (cancelled) return
         setData(nextData)
@@ -44,7 +42,7 @@ export function ActivityWidget({
     return () => {
       cancelled = true
     }
-  }, [baseUrl, publicId])
+  }, [url])
 
   if (error) {
     return <WidgetMessage className={className} title="Widget unavailable" body={error} />

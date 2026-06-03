@@ -9,7 +9,7 @@ import {
 } from 'token-activity-widget'
 import { getSampleDefinition, sampleDefinitions } from '../data/samples'
 
-type Mode = 'primitive' | 'direct' | 'hosted'
+type Mode = 'primitive' | 'direct' | 'fetched'
 
 type ThemeDraft = {
   text: string
@@ -28,6 +28,10 @@ function buildThemeDraft(preset: ActivityWidgetPreset): ThemeDraft {
     tooltipText: base.tooltipText,
     activityScale: [...base.activityScale] as ThemeDraft['activityScale'],
   }
+}
+
+function trimTrailingSlash(value: string) {
+  return value.replace(/\/+$/, '')
 }
 
 export function App() {
@@ -80,6 +84,11 @@ export function App() {
     [preset, sample.data],
   )
 
+  const fetchUrl = useMemo(
+    () => `${trimTrailingSlash(baseUrl || 'http://localhost:4277')}/api/public-widget/${encodeURIComponent(publicId || sample.id)}`,
+    [baseUrl, publicId, sample.id],
+  )
+
   const snippet = useMemo(() => {
     const labelLine = showLabels ? '' : '\n  showLabels={false}'
     const tooltipLine = showTooltip ? '' : '\n  showTooltip={false}'
@@ -108,12 +117,11 @@ export function App() {
     return `import { ActivityWidget } from 'token-activity-widget'
 
 <ActivityWidget
-  publicId="${publicId || sample.id}"
-  baseUrl="${baseUrl || 'http://localhost:4277'}"
+  url="${fetchUrl}"
   preset="${preset}"${themeLine}${labelLine}${tooltipLine}
   className="token-grid"
 />`
-  }, [baseUrl, mode, preset, publicId, sample.id, showLabels, showTooltip, themeEnabled])
+  }, [fetchUrl, mode, preset, publicId, sample.id, showLabels, showTooltip, themeEnabled])
 
   return (
     <div className="shell">
@@ -124,7 +132,7 @@ export function App() {
         </div>
         <p className="hero-copy">
           This app imports the published package by name. Use it to pressure-test the bare heatmap,
-          direct-data wrapper, hosted fetch wrapper, and the small customization surface before you
+          direct-data wrapper, fetched JSON wrapper, and the small customization surface before you
           drop it into your own site chrome.
         </p>
       </header>
@@ -137,7 +145,7 @@ export function App() {
               <h2>Shape the embed, not a built-in card.</h2>
             </div>
             <span className="status-pill">
-              {mode === 'primitive' ? 'Bare grid' : mode === 'direct' ? 'Direct data' : 'Hosted fetch'}
+              {mode === 'primitive' ? 'Bare grid' : mode === 'direct' ? 'Direct data' : 'Fetch URL'}
             </span>
           </div>
 
@@ -150,8 +158,8 @@ export function App() {
               <button type="button" data-active={mode === 'direct'} onClick={() => setMode('direct')}>
                 From data
               </button>
-              <button type="button" data-active={mode === 'hosted'} onClick={() => setMode('hosted')}>
-                Hosted fetch
+              <button type="button" data-active={mode === 'fetched'} onClick={() => setMode('fetched')}>
+                Fetch URL
               </button>
             </div>
           </label>
@@ -192,7 +200,7 @@ export function App() {
             </label>
           </div>
 
-          {mode === 'hosted' ? (
+          {mode === 'fetched' ? (
             <div className="grid two-up">
               <label className="field">
                 <span>Base URL</span>
@@ -282,9 +290,9 @@ export function App() {
 
           <div className="notes">
             <p>
-              <strong>Hosted mode note:</strong> the sandbox serves
-              {' '}<code>/api/public-widget/:publicId</code> locally, so you can test fetch loading, success,
-              and error states without a second app.
+              <strong>Fetch URL note:</strong> the sandbox serves a mock
+              {' '}<code>/api/public-widget/:publicId</code> endpoint locally, so this mode still uses sample data
+              unless you point the widget at your own generated JSON or API URL.
             </p>
           </div>
         </section>
@@ -323,8 +331,7 @@ export function App() {
                 />
               ) : (
                 <ActivityWidget
-                  publicId={publicId || sample.id}
-                  baseUrl={baseUrl}
+                  url={fetchUrl}
                   preset={preset}
                   theme={themeOverride}
                   showLabels={showLabels}

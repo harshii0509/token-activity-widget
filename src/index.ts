@@ -1,7 +1,7 @@
 export { ActivityGrid } from './components/ActivityGrid.js'
 export { ActivityWidget } from './components/ActivityWidget.js'
 export { ActivityWidgetFromData } from './components/ActivityWidgetFromData.js'
-export { fetchActivityWidgetData, buildActivityWidgetDataUrl } from './data/fetchActivityWidgetData.js'
+export { fetchActivityWidgetData } from './data/fetchActivityWidgetData.js'
 export { getPresetTheme } from './theme/presets.js'
 export { mergeWidgetTheme } from './theme/mergeTheme.js'
 export type {
