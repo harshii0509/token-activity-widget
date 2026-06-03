@@ -68,7 +68,7 @@ try {
   const pageHtml = await pageResponse.text()
 
   assert(pageResponse.ok, `Expected sandbox page to load, got ${pageResponse.status}`)
-  assert(pageHtml.includes('Token Activity Widget Sandbox'), 'Sandbox HTML did not include the expected title')
+  assert(pageHtml.includes('Token Activity Grid Sandbox'), 'Sandbox HTML did not include the expected title')
 
   const okResponse = await fetch(`${origin}/api/public-widget/demo-user`)
   const okJson = await okResponse.json()

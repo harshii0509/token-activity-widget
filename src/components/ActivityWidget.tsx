@@ -11,6 +11,8 @@ export interface ActivityWidgetProps {
   preset?: ActivityWidgetPreset
   theme?: Partial<ActivityWidgetTheme>
   className?: string
+  showLabels?: boolean
+  showTooltip?: boolean
 }
 
 export function ActivityWidget({
@@ -19,6 +21,8 @@ export function ActivityWidget({
   preset,
   theme,
   className,
+  showLabels,
+  showTooltip,
 }: ActivityWidgetProps) {
   const [data, setData] = useState<ActivityWidgetData | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -50,7 +54,16 @@ export function ActivityWidget({
     return <WidgetMessage className={className} title="Loading activity" body="Fetching the latest activity widget..." />
   }
 
-  return <ActivityWidgetFromData data={data} preset={preset} theme={theme} className={className} />
+  return (
+    <ActivityWidgetFromData
+      data={data}
+      preset={preset}
+      theme={theme}
+      className={className}
+      showLabels={showLabels}
+      showTooltip={showTooltip}
+    />
+  )
 }
 
 function WidgetMessage({
@@ -66,15 +79,12 @@ function WidgetMessage({
     <div
       className={className}
       style={{
-        borderRadius: 24,
-        border: '1px solid rgba(15, 23, 42, 0.12)',
-        background: '#f8fbff',
-        padding: 20,
-        boxShadow: '0 12px 40px rgba(15, 23, 42, 0.08)',
+        padding: 12,
         color: '#0f172a',
+        fontFamily: 'ui-sans-serif, system-ui, sans-serif',
       }}
     >
-      <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 800, color: '#64748b' }}>
+      <div style={{ fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 800, color: '#64748b' }}>
         {title}
       </div>
       <div style={{ marginTop: 8, fontSize: 14 }}>{body}</div>

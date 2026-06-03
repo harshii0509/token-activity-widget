@@ -5,7 +5,12 @@ import {
   fetchActivityWidgetData,
 } from '../dist/data/fetchActivityWidgetData.js'
 
-const samplePayload = {
+const minimalPayload = {
+  preset: 'arcade',
+  activity: [],
+}
+
+const richerLegacyPayload = {
   publicId: 'demo',
   displayName: 'Demo User',
   image: null,
@@ -21,17 +26,37 @@ test('buildActivityWidgetDataUrl trims trailing slashes and encodes the public i
   assert.equal(url, 'https://leaderboard.example.com/api/public-widget/abc%20123')
 })
 
-test('fetchActivityWidgetData parses successful payloads', async () => {
+test('fetchActivityWidgetData parses minimal grid payloads', async () => {
   const originalFetch = globalThis.fetch
   globalThis.fetch = async () =>
-    new Response(JSON.stringify(samplePayload), {
+    new Response(JSON.stringify(minimalPayload), {
       status: 200,
       headers: { 'content-type': 'application/json' },
     }) as typeof fetch
 
   try {
     const result = await fetchActivityWidgetData('https://leaderboard.example.com', 'demo')
-    assert.equal(result.displayName, 'Demo User')
+    assert.equal(result.preset, 'arcade')
+    assert.deepEqual(result.activity, [])
+    assert.equal(result.publicId, undefined)
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('fetchActivityWidgetData tolerates richer legacy payloads and ignores extra fields', async () => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify(richerLegacyPayload), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }) as typeof fetch
+
+  try {
+    const result = await fetchActivityWidgetData('https://leaderboard.example.com', 'demo')
+    assert.equal(result.publicId, 'demo')
+    assert.equal(result.lastSyncedAt, '2026-06-04T10:00:00.000Z')
+    assert.deepEqual(result.activity, [])
   } finally {
     globalThis.fetch = originalFetch
   }

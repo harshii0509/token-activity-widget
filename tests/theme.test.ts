@@ -8,16 +8,16 @@ test('mergeWidgetTheme preserves preset defaults when only one field is overridd
   const preset = getPresetTheme('night')
 
   assert.equal(theme.text, '#ffffff')
-  assert.equal(theme.frame, preset.frame)
+  assert.equal(theme.muted, preset.muted)
   assert.deepEqual(theme.activityScale, preset.activityScale)
 })
 
 test('mergeWidgetTheme lets theme overrides win over the preset', () => {
   const theme = mergeWidgetTheme('paper', {
     activityScale: ['#111111', '#222222', '#333333', '#444444', '#555555'],
-    chipBorder: '#abcdef',
+    tooltipBackground: '#abcdef',
   })
 
-  assert.equal(theme.chipBorder, '#abcdef')
+  assert.equal(theme.tooltipBackground, '#abcdef')
   assert.deepEqual(theme.activityScale, ['#111111', '#222222', '#333333', '#444444', '#555555'])
 })

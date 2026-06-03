@@ -6,23 +6,29 @@ export function HeatmapGrid({
   maxTokens,
   theme,
   onHover,
+  showLabels = true,
 }: {
   activity: ActivityWidgetDay[]
   maxTokens: number
   theme: ActivityWidgetTheme
   onHover: (value: { day: ActivityWidgetDay; rect: DOMRect } | null) => void
+  showLabels?: boolean
 }) {
   const weeks = buildWeeks(activity)
+  const columns = showLabels ? '24px repeat(53, 13px)' : 'repeat(53, 13px)'
+  const rows = showLabels ? '14px repeat(7, 13px)' : 'repeat(7, 13px)'
 
   return (
-    <div style={{ marginTop: 16, overflowX: 'auto' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '24px repeat(53, 13px)', gridTemplateRows: '14px repeat(7, 13px)', gap: 3, minWidth: 760 }}>
-        <div />
-        {weeks.map((week, wi) => (
-          <div key={`month-${wi}`} style={{ fontSize: 10, color: theme.muted, display: 'flex', alignItems: 'center' }}>
-            {week[0] && isMonthTick(week[0].date) ? monthAbbr(week[0].date) : ''}
-          </div>
-        ))}
+    <div style={{ overflowX: 'auto' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: columns, gridTemplateRows: rows, gap: 3, minWidth: showLabels ? 760 : 686, width: 'max-content' }}>
+        {showLabels ? <div /> : null}
+        {showLabels
+          ? weeks.map((week, wi) => (
+              <div key={`month-${wi}`} style={{ fontSize: 10, color: theme.muted, display: 'flex', alignItems: 'center' }}>
+                {week[0] && isMonthTick(week[0].date) ? monthAbbr(week[0].date) : ''}
+              </div>
+            ))
+          : null}
 
         {Array.from({ length: 7 }, (_, dayIndex) => (
           <Row
@@ -33,6 +39,7 @@ export function HeatmapGrid({
             maxTokens={maxTokens}
             theme={theme}
             onHover={onHover}
+            showLabels={showLabels}
           />
         ))}
       </div>
@@ -47,6 +54,7 @@ function Row({
   maxTokens,
   theme,
   onHover,
+  showLabels,
 }: {
   label: string
   cells: ActivityWidgetDay[][]
@@ -54,10 +62,11 @@ function Row({
   maxTokens: number
   theme: ActivityWidgetTheme
   onHover: (value: { day: ActivityWidgetDay; rect: DOMRect } | null) => void
+  showLabels: boolean
 }) {
   return (
     <>
-      <div style={{ fontSize: 9, color: theme.muted, display: 'flex', alignItems: 'center' }}>{label}</div>
+      {showLabels ? <div style={{ fontSize: 9, color: theme.muted, display: 'flex', alignItems: 'center' }}>{label}</div> : null}
       {cells.map((week, wi) => {
         const day = week[dayIndex]
         if (!day) return <div key={`empty-${dayIndex}-${wi}`} />

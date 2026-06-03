@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  ActivityGrid,
   ActivityWidget,
   ActivityWidgetFromData,
   getPresetTheme,
@@ -8,39 +9,35 @@ import {
 } from 'token-activity-widget'
 import { getSampleDefinition, sampleDefinitions } from '../data/samples'
 
-type Mode = 'direct' | 'hosted'
+type Mode = 'primitive' | 'direct' | 'hosted'
 
 type ThemeDraft = {
-  frame: string
   text: string
   muted: string
-  chipBorder: string
   tooltipBackground: string
   tooltipText: string
-  avatarBackground: string
   activityScale: [string, string, string, string, string]
 }
 
 function buildThemeDraft(preset: ActivityWidgetPreset): ThemeDraft {
   const base = getPresetTheme(preset)
   return {
-    frame: base.frame,
     text: base.text,
     muted: base.muted,
-    chipBorder: base.chipBorder,
     tooltipBackground: base.tooltipBackground,
     tooltipText: base.tooltipText,
-    avatarBackground: base.avatarBackground,
     activityScale: [...base.activityScale] as ThemeDraft['activityScale'],
   }
 }
 
 export function App() {
-  const [mode, setMode] = useState<Mode>('direct')
+  const [mode, setMode] = useState<Mode>('primitive')
   const [sampleId, setSampleId] = useState(sampleDefinitions[0]?.id ?? 'demo-user')
   const [preset, setPreset] = useState<ActivityWidgetPreset>('night')
   const [width, setWidth] = useState(860)
   const [themeEnabled, setThemeEnabled] = useState(false)
+  const [showLabels, setShowLabels] = useState(true)
+  const [showTooltip, setShowTooltip] = useState(true)
   const [publicId, setPublicId] = useState(sampleDefinitions[0]?.id ?? 'demo-user')
   const [baseUrl, setBaseUrl] = useState('')
   const [themeDraft, setThemeDraft] = useState<ThemeDraft>(() => buildThemeDraft('night'))
@@ -67,13 +64,10 @@ export function App() {
   const themeOverride = useMemo<Partial<ActivityWidgetTheme> | undefined>(() => {
     if (!themeEnabled) return undefined
     return {
-      frame: themeDraft.frame,
       text: themeDraft.text,
       muted: themeDraft.muted,
-      chipBorder: themeDraft.chipBorder,
       tooltipBackground: themeDraft.tooltipBackground,
       tooltipText: themeDraft.tooltipText,
-      avatarBackground: themeDraft.avatarBackground,
       activityScale: themeDraft.activityScale,
     }
   }, [themeDraft, themeEnabled])
@@ -87,12 +81,27 @@ export function App() {
   )
 
   const snippet = useMemo(() => {
+    const labelLine = showLabels ? '' : '\n  showLabels={false}'
+    const tooltipLine = showTooltip ? '' : '\n  showTooltip={false}'
+    const themeLine = themeEnabled ? '\n  theme={themeOverrides}' : ''
+
+    if (mode === 'primitive') {
+      return `import { ActivityGrid } from 'token-activity-widget'
+
+<ActivityGrid
+  activity={activity}
+  preset="${preset}"${themeLine}${labelLine}${tooltipLine}
+  className="token-grid"
+/>`
+    }
+
     if (mode === 'direct') {
       return `import { ActivityWidgetFromData } from 'token-activity-widget'
 
 <ActivityWidgetFromData
-  data={sampleData}
-  preset="${preset}"${themeEnabled ? '\n  theme={themeOverrides}' : ''}
+  data={activityData}
+  preset="${preset}"${themeLine}${labelLine}${tooltipLine}
+  className="token-grid"
 />`
     }
 
@@ -100,21 +109,23 @@ export function App() {
 
 <ActivityWidget
   publicId="${publicId || sample.id}"
-  baseUrl="${baseUrl || 'http://localhost:4177'}"
-  preset="${preset}"${themeEnabled ? '\n  theme={themeOverrides}' : ''}
+  baseUrl="${baseUrl || 'http://localhost:4277'}"
+  preset="${preset}"${themeLine}${labelLine}${tooltipLine}
+  className="token-grid"
 />`
-  }, [baseUrl, mode, preset, publicId, sample.id, themeEnabled])
+  }, [baseUrl, mode, preset, publicId, sample.id, showLabels, showTooltip, themeEnabled])
 
   return (
     <div className="shell">
       <header className="hero">
         <div>
-          <p className="eyebrow">Token Activity Widget</p>
-          <h1>Local consumer sandbox for install DX, real rendering, and hosted API testing.</h1>
+          <p className="eyebrow">Token Activity Grid</p>
+          <h1>Embed playground for the grid-only package surface.</h1>
         </div>
         <p className="hero-copy">
-          This app imports the package by name, not by copied source code. Use it to test direct-data mode,
-          hosted fetch mode, theme overrides, layout pressure, and sample payloads before you ship.
+          This app imports the published package by name. Use it to pressure-test the bare heatmap,
+          direct-data wrapper, hosted fetch wrapper, and the small customization surface before you
+          drop it into your own site chrome.
         </p>
       </header>
 
@@ -123,16 +134,21 @@ export function App() {
           <div className="panel-header">
             <div>
               <p className="panel-kicker">Controls</p>
-              <h2>Try the package like a real consumer.</h2>
+              <h2>Shape the embed, not a built-in card.</h2>
             </div>
-            <span className="status-pill">{mode === 'direct' ? 'Direct data' : 'Hosted fetch'}</span>
+            <span className="status-pill">
+              {mode === 'primitive' ? 'Bare grid' : mode === 'direct' ? 'Direct data' : 'Hosted fetch'}
+            </span>
           </div>
 
           <label className="field">
-            <span>Render mode</span>
+            <span>Render surface</span>
             <div className="segmented">
+              <button type="button" data-active={mode === 'primitive'} onClick={() => setMode('primitive')}>
+                ActivityGrid
+              </button>
               <button type="button" data-active={mode === 'direct'} onClick={() => setMode('direct')}>
-                Direct data
+                From data
               </button>
               <button type="button" data-active={mode === 'hosted'} onClick={() => setMode('hosted')}>
                 Hosted fetch
@@ -191,6 +207,26 @@ export function App() {
             </div>
           ) : null}
 
+          <div className="grid two-up">
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={showLabels}
+                onChange={(event) => setShowLabels(event.target.checked)}
+              />
+              <span>Show month and weekday labels</span>
+            </label>
+
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={showTooltip}
+                onChange={(event) => setShowTooltip(event.target.checked)}
+              />
+              <span>Show built-in hover tooltip</span>
+            </label>
+          </div>
+
           <label className="toggle">
             <input
               type="checkbox"
@@ -202,12 +238,7 @@ export function App() {
 
           {themeEnabled ? (
             <div className="theme-editor">
-              <div className="grid three-up">
-                <ColorField
-                  label="Frame"
-                  value={themeDraft.frame}
-                  onChange={(value) => setThemeDraft((current) => ({ ...current, frame: value }))}
-                />
+              <div className="grid two-up">
                 <ColorField
                   label="Text"
                   value={themeDraft.text}
@@ -219,19 +250,14 @@ export function App() {
                   onChange={(value) => setThemeDraft((current) => ({ ...current, muted: value }))}
                 />
                 <ColorField
-                  label="Chip border"
-                  value={themeDraft.chipBorder}
-                  onChange={(value) => setThemeDraft((current) => ({ ...current, chipBorder: value }))}
-                />
-                <ColorField
                   label="Tooltip bg"
                   value={themeDraft.tooltipBackground}
                   onChange={(value) => setThemeDraft((current) => ({ ...current, tooltipBackground: value }))}
                 />
                 <ColorField
-                  label="Avatar bg"
-                  value={themeDraft.avatarBackground}
-                  onChange={(value) => setThemeDraft((current) => ({ ...current, avatarBackground: value }))}
+                  label="Tooltip text"
+                  value={themeDraft.tooltipText}
+                  onChange={(value) => setThemeDraft((current) => ({ ...current, tooltipText: value }))}
                 />
               </div>
 
@@ -257,8 +283,8 @@ export function App() {
           <div className="notes">
             <p>
               <strong>Hosted mode note:</strong> the sandbox serves
-              {' '}<code>/api/public-widget/:publicId</code> locally, so you can test fetch loading, success, and error states
-              without a second app.
+              {' '}<code>/api/public-widget/:publicId</code> locally, so you can test fetch loading, success,
+              and error states without a second app.
             </p>
           </div>
         </section>
@@ -267,22 +293,43 @@ export function App() {
           <div className="panel-header">
             <div>
               <p className="panel-kicker">Preview</p>
-              <h2>Stress the real widget surface.</h2>
+              <h2>See the exact grid surface your website would embed.</h2>
             </div>
             <span className="status-pill">{sample.label}</span>
           </div>
 
           <div className="preview-stage">
             <div className="preview-ruler">
-              <span>{width}px canvas</span>
+              <span>{width}px wrapper</span>
               <span>{themeEnabled ? 'Custom theme' : `Preset: ${preset}`}</span>
             </div>
 
             <div className="widget-frame" style={{ width }}>
-              {mode === 'direct' ? (
-                <ActivityWidgetFromData data={directData} preset={preset} theme={themeOverride} />
+              {mode === 'primitive' ? (
+                <ActivityGrid
+                  activity={directData.activity}
+                  preset={preset}
+                  theme={themeOverride}
+                  showLabels={showLabels}
+                  showTooltip={showTooltip}
+                />
+              ) : mode === 'direct' ? (
+                <ActivityWidgetFromData
+                  data={directData}
+                  preset={preset}
+                  theme={themeOverride}
+                  showLabels={showLabels}
+                  showTooltip={showTooltip}
+                />
               ) : (
-                <ActivityWidget publicId={publicId || sample.id} baseUrl={baseUrl} preset={preset} theme={themeOverride} />
+                <ActivityWidget
+                  publicId={publicId || sample.id}
+                  baseUrl={baseUrl}
+                  preset={preset}
+                  theme={themeOverride}
+                  showLabels={showLabels}
+                  showTooltip={showTooltip}
+                />
               )}
             </div>
           </div>

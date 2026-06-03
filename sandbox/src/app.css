@@ -151,7 +151,7 @@ pre {
 
 .segmented {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -248,6 +248,10 @@ pre {
 .widget-frame {
   max-width: 100%;
   margin: 0 auto;
+  padding: 18px;
+  border: 1px dashed rgba(125, 211, 252, 0.22);
+  border-radius: 20px;
+  background: rgba(7, 12, 23, 0.56);
 }
 
 .snippet-card {

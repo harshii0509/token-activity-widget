@@ -3,14 +3,10 @@ export type ActivityWidgetPreset = 'arcade' | 'night' | 'paper'
 export type ActivityScale = [string, string, string, string, string]
 
 export interface ActivityWidgetTheme {
-  frame: string
   text: string
   muted: string
-  chipBackground: string
-  chipBorder: string
   tooltipBackground: string
   tooltipText: string
-  avatarBackground: string
   activityScale: ActivityScale
 }
 
@@ -25,12 +21,8 @@ export interface ActivityWidgetDay {
 }
 
 export interface ActivityWidgetData {
-  publicId: string
-  displayName: string
-  image: string | null
+  publicId?: string
   preset: ActivityWidgetPreset
-  currentStreak: number
-  totalActiveDays: number
-  lastSyncedAt: string | null
+  lastSyncedAt?: string | null
   activity: ActivityWidgetDay[]
 }

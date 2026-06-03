@@ -1,12 +1,8 @@
-import { ActivityWidgetFromData, type ActivityWidgetData } from '../src/index'
+import { ActivityGrid, ActivityWidgetFromData, type ActivityWidgetData } from '../src/index'
 
 const sampleData: ActivityWidgetData = {
   publicId: 'sample-user',
-  displayName: 'Sample User',
-  image: null,
   preset: 'night',
-  currentStreak: 7,
-  totalActiveDays: 31,
   lastSyncedAt: '2026-06-04T10:00:00.000Z',
   activity: [
     {
@@ -26,16 +22,22 @@ export function ExampleDirectDataWidget() {
     <ActivityWidgetFromData
       data={sampleData}
       theme={{
-        frame: '#faf5ff',
         text: '#3b0764',
         muted: '#7e22ce',
-        chipBackground: '#ffffff',
-        chipBorder: '#d8b4fe',
         tooltipBackground: '#581c87',
         tooltipText: '#faf5ff',
-        avatarBackground: '#e9d5ff',
         activityScale: ['#f3e8ff', '#d8b4fe', '#c084fc', '#a855f7', '#6b21a8'],
       }}
+    />
+  )
+}
+
+export function ExampleBareGrid() {
+  return (
+    <ActivityGrid
+      activity={sampleData.activity}
+      preset="night"
+      showTooltip={false}
     />
   )
 }

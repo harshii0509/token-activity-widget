@@ -2,56 +2,70 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { ActivityGrid } from '../dist/components/ActivityGrid.js'
 import { ActivityWidgetFromData } from '../dist/components/ActivityWidgetFromData.js'
 import { getTooltipLines } from '../dist/data/widgetData.js'
 import type { ActivityWidgetData } from '../dist/types.js'
 
 const baseData: ActivityWidgetData = {
   publicId: 'demo-user',
-  displayName: 'Extremely Long Display Name For Testing Widget Layout',
-  image: null,
   preset: 'arcade',
-  currentStreak: 0,
-  totalActiveDays: 0,
   lastSyncedAt: null,
   activity: [],
 }
 
-test('ActivityWidgetFromData renders direct data mode with zero activity safely', () => {
+test('ActivityWidgetFromData renders the grid safely with zero activity', () => {
   const html = renderToStaticMarkup(React.createElement(ActivityWidgetFromData, { data: baseData }))
 
-  assert.match(html, /Personal activity/)
-  assert.match(html, /Active days/)
-  assert.match(html, /0d/)
+  assert.match(html, /Mon/)
+  assert.match(html, /Wed/)
+  assert.match(html, /Fri/)
+  assert.match(html, /activity cell/)
 })
 
-test('ActivityWidgetFromData renders avatar fallback and keeps full long name accessible', () => {
+test('ActivityWidgetFromData strips profile chrome from the rendered output', () => {
   const html = renderToStaticMarkup(React.createElement(ActivityWidgetFromData, { data: baseData }))
 
-  assert.match(html, /avatar fallback/)
-  assert.match(html, /title="Extremely Long Display Name For Testing Widget Layout"/)
+  assert.doesNotMatch(html, /avatar fallback/)
+  assert.doesNotMatch(html, /Personal activity/)
+  assert.doesNotMatch(html, /Active days/)
+  assert.doesNotMatch(html, /Streak/)
 })
 
-test('ActivityWidgetFromData stays white-label and does not force Claude Leaderboard branding', () => {
+test('ActivityWidgetFromData stays white-label and only applies grid-relevant theme overrides', () => {
   const html = renderToStaticMarkup(
     React.createElement(ActivityWidgetFromData, {
       data: baseData,
       theme: {
-        frame: '#101010',
         text: '#f5f5f5',
         muted: '#bdbdbd',
-        chipBackground: '#1f1f1f',
-        chipBorder: '#444444',
         tooltipBackground: '#000000',
         tooltipText: '#ffffff',
-        avatarBackground: '#262626',
         activityScale: ['#111111', '#222222', '#333333', '#444444', '#555555'],
       },
     }),
   )
 
   assert.doesNotMatch(html, /Claude Leaderboard/)
-  assert.match(html, /background:#101010/)
+  assert.match(html, /color:#f5f5f5/)
+  assert.match(html, /#111111/)
+})
+
+test('ActivityGrid can render a full-year dataset without card chrome', () => {
+  const activity = Array.from({ length: 365 }, (_, index) => ({
+    date: new Date(Date.UTC(2026, 0, index + 1)).toISOString().slice(0, 10),
+    input_tokens: index + 1,
+    output_tokens: index + 2,
+    cache_creation_input_tokens: 0,
+    cache_read_input_tokens: 0,
+    messages: 1,
+    sessions: 1,
+  }))
+
+  const html = renderToStaticMarkup(React.createElement(ActivityGrid, { activity, preset: 'night' }))
+
+  assert.match(html, /activity cell/)
+  assert.doesNotMatch(html, /avatar fallback/)
 })
 
 test('tooltip helper returns tokens, messages, and sessions lines', () => {

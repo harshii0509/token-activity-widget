@@ -1,11 +1,17 @@
 import type { ActivityWidgetData, ActivityWidgetDay } from '../types.js'
 
+const VALID_PRESETS = new Set(['arcade', 'night', 'paper'])
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
 function isNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value)
+}
+
+function isPreset(value: unknown): value is ActivityWidgetData['preset'] {
+  return typeof value === 'string' && VALID_PRESETS.has(value)
 }
 
 function normalizeDay(value: unknown): ActivityWidgetDay | null {
@@ -42,24 +48,13 @@ export function normalizeWidgetData(value: unknown): ActivityWidgetData {
     ? value.activity.map(normalizeDay).filter((day): day is ActivityWidgetDay => day !== null)
     : null
 
-  if (
-    typeof value.publicId !== 'string' ||
-    typeof value.displayName !== 'string' ||
-    typeof value.preset !== 'string' ||
-    !isNumber(value.currentStreak) ||
-    !isNumber(value.totalActiveDays) ||
-    activity === null
-  ) {
+  if (!isPreset(value.preset) || activity === null) {
     throw new Error('Widget response was missing required fields.')
   }
 
   return {
-    publicId: value.publicId,
-    displayName: value.displayName,
-    image: typeof value.image === 'string' ? value.image : null,
-    preset: value.preset as ActivityWidgetData['preset'],
-    currentStreak: value.currentStreak,
-    totalActiveDays: value.totalActiveDays,
+    publicId: typeof value.publicId === 'string' ? value.publicId : undefined,
+    preset: value.preset,
     lastSyncedAt: typeof value.lastSyncedAt === 'string' ? value.lastSyncedAt : null,
     activity,
   }
