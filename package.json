@@ -1,5 +1,5 @@
 {
-  "name": "@claude-leaderboard/activity-widget-react",
+  "name": "token-activity-widget",
   "version": "0.1.0",
   "private": false,
   "type": "module",

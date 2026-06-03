@@ -1,4 +1,4 @@
-# `@claude-leaderboard/activity-widget-react`
+# `token-activity-widget`
 
 White-label React activity widget renderer for Claude Leaderboard hosted widgets and custom activity data.
 
@@ -13,13 +13,13 @@ White-label React activity widget renderer for Claude Leaderboard hosted widgets
 ## Install
 
 ```bash
-npm install @claude-leaderboard/activity-widget-react
+npm install token-activity-widget
 ```
 
 ## Hosted mode
 
 ```tsx
-import { ActivityWidget } from '@claude-leaderboard/activity-widget-react'
+import { ActivityWidget } from 'token-activity-widget'
 
 export function PortfolioWidget() {
   return (
@@ -41,7 +41,7 @@ export function PortfolioWidget() {
 ## Direct data mode
 
 ```tsx
-import { ActivityWidgetFromData, type ActivityWidgetData } from '@claude-leaderboard/activity-widget-react'
+import { ActivityWidgetFromData, type ActivityWidgetData } from 'token-activity-widget'
 
 const data: ActivityWidgetData = {
   publicId: 'demo-user',
