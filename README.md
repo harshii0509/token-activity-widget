@@ -15,11 +15,14 @@ Package: [npmjs.com/package/token-activity-widget](https://www.npmjs.com/package
   - `Import JSON`: simplest and private-first
   - `Fetch URL`: runtime fetch from a static JSON file or API URL
 
+`token-activity-widget@0.2.0+` is the grid-only release line.
+
 ## What this is not
 
 - It does not read local logs from the browser
 - It does not ask website visitors for Claude, Codex, or OpenCode tokens
 - It does not require your users to log into a separate leaderboard website
+- It does not ship built-in profile chrome you have to fight against
 
 The browser package only renders data you give it. Real activity collection stays in the CLI.
 
@@ -67,7 +70,6 @@ export function SiteSection() {
 import { ActivityWidgetFromData, type ActivityWidgetData } from 'token-activity-widget'
 
 const data: ActivityWidgetData = {
-  publicId: 'demo-user',
   preset: 'night',
   lastSyncedAt: new Date().toISOString(),
   activity: [],
@@ -102,6 +104,26 @@ That URL can be:
 - any other same-origin or allowed cross-origin JSON endpoint
 
 The fetch layer still tolerates richer legacy payloads with extra fields, but only the grid data is used.
+
+## How Real Data Actually Works
+
+The React package does not fetch Claude, Codex, or OpenCode data by itself.
+
+Instead, the flow is:
+
+1. You run `npx token-activity-widget sync` on your own machine
+2. The CLI reads your local activity history from supported local files and databases
+3. The CLI writes normalized JSON into your website repo
+4. Your website either imports that JSON directly or fetches the generated JSON URL
+
+That means:
+
+- no browser-side access to provider tokens
+- no browser-side access to local machine paths
+- no hidden login flow to a separate service
+- no visitor auth required just to view the grid on your site
+
+If you want live or shared activity, you own that publishing step through the generated JSON file or your own API route.
 
 ## Real Data Setup
 
@@ -202,6 +224,31 @@ All public components support:
 
 This package is intentionally white-label. Wrap the grid in your own layout, typography, and brand chrome.
 
+### Theme Example
+
+```tsx
+import { ActivityGrid } from 'token-activity-widget'
+
+export function CustomBrandGrid({ activity }) {
+  return (
+    <ActivityGrid
+      activity={activity}
+      showLabels
+      showTooltip
+      theme={{
+        text: '#14532d',
+        muted: '#4d7c0f',
+        tooltipBackground: '#052e16',
+        tooltipText: '#f0fdf4',
+        activityScale: ['#ecfccb', '#bef264', '#84cc16', '#65a30d', '#3f6212'],
+      }}
+    />
+  )
+}
+```
+
+You own the surrounding UI. Add your own title, wrapper, spacing, border, background, and copy in your app instead of relying on package-owned chrome.
+
 ### Theme API
 
 ```ts
@@ -271,3 +318,11 @@ See [`examples/`](./examples) for:
 - bare grid usage
 - direct-data usage
 - fetched JSON URL usage
+
+## Troubleshooting
+
+If you still see an old card with a header, avatar, streak, or active-day chips, you are using the pre-grid release line. Upgrade to the current package version:
+
+```bash
+npm install token-activity-widget@latest
+```
